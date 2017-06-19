@@ -1,0 +1,15 @@
+galaxy_info:
+  author: Daniel Schneller
+  description: Installs and configures scollector, the telemetry collector for Bosun.
+  company: Rheinwerk
+  license: license (MIT)
+  min_ansible_version: 2.2
+  platforms:
+  - name: Ubuntu
+    versions:
+    - all
+  galaxy_tags:
+    - Bosun
+    - scollector
+dependencies: []
+

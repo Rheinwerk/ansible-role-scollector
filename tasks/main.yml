@@ -1,0 +1,54 @@
+---
+
+- name: Install scollector package
+  apt: name=bosun-scollector state={{ install_state|default('present') }}
+
+- name: Add packagecloud gpg key for lukaspustina repository
+  apt_key: id=D59097AB url=https://packagecloud.io/lukaspustina/opensource/gpgkey state=present
+
+- name: Add lukaspustina opensource repository
+  apt_repository: repo="deb https://packagecloud.io/lukaspustina/opensource/ubuntu/ trusty main" state=present
+  register: repo_added
+
+- name: Apt Update
+  apt: update_cache=yes
+  when: RW_APT_CACHE_UPDATE is defined or repo_added|changed
+
+- set_fact:
+    install_state: latest
+  when: RW_ENABLE_DOWNLOADS is defined
+
+- name: Install recommended tools
+  apt: pkg="{{ item }}" state=present
+  with_items:
+    - bosun-emitter
+    - jq
+
+- name: Create scollector configuration file
+  template: src="{{ item }}.j2" dest="/{{ item }}" owner=root group=root mode=0640
+  notify:
+    - Restart scollector
+
+- name: Announce Meta data of external collector metrics
+  run_once: True
+  command: >
+    curl -w "%{http_code}" -H "Content-Type: application/json" -X POST -d '[ { "metric": "{{ item.metric }}", "name": "rate", "value": "{{ item.ratetype }}" }, { "metric": "{{ item.metric }}", "name": "unit", "value": "{{ item.unit }}" }, { "metric": "{{ item.metric }}", "name": "desc", "value": "{{ item.desc|default('') }}" } ]' http://{{ BOSUN.server.ip }}:{{ BOSUN.server.port }}/api/metadata/put
+  register: result
+  failed_when: result.stdout != "204"
+  with_items: "{{ _scollector.external_collectors.metric_metadata }}"
+
+- name: Create external collectors directory
+  file: path={{ _scollector.external_collectors.dir }} state=directory owner=root group=root mode=0755
+
+- name: Create external collectors interval directories
+  file: path={{ _scollector.external_collectors.dir }}/{{ item.interval }} state=directory owner=root group=root mode=0755
+  with_items: "{{ _scollector.external_collectors.collectors[ group ]}}"
+  notify:
+    - Restart scollector
+
+- name: Create external collectors
+  template: src="external_collectors/{{ item.template }}" dest="{{ _scollector.external_collectors.dir }}/{{ item.interval }}/{{ item.filename }}" owner=root group=root mode=0750
+  with_items: "{{ _scollector.external_collectors.collectors[ group ] }}"
+  notify:
+    - Restart scollector
+

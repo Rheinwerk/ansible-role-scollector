@@ -1,0 +1,16 @@
+Host = "{{ _scollector.server.ip }}:{{ _scollector.server.port }}"
+FullHost = false
+Hostname = "{{ ansible_hostname ~ "." ~ _scollector.domain }}"
+ColDir = "{{ _scollector.external_collectors.dir }}"
+DisableSelf = false
+
+[Tags]
+  hostgroup = "{{ _scollector.hostgroup }}"
+{% for k,v in _scollector.common.tags.iteritems() %}
+  {{ k }} = "{{ v }}"
+{% endfor %}
+
+{% if _scollector.extra_lines.hosts is defined and _scollector.extra_lines.hosts[inventory_hostname] is defined %}
+{{ _scollector.extra_lines.hosts[inventory_hostname] }}
+{% endif %}
+

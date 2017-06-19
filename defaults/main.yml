@@ -1,0 +1,16 @@
+---
+
+_scollector:
+  use_default_config: yes
+  server:
+    ip: localhost
+    port: 8070
+  hostname: "{{ ansible_hostname }}"
+  domain:
+  hostgroup: my-group
+  common:
+    tags:
+      one_tag: one_value
+  extra_lines:
+    # Mööp
+
