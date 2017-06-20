@@ -11,7 +11,7 @@ The general contract of this role is to take the variables map `_scollector` fro
 Requirements
 ------------
 
-Bosun does not provide a Debian/Ubuntu repository. To use this role, you currently need to first make sure you have the bosun-scollector package available in a repository, configured in your APT sources. The same goes for the bosun-emitter. It can be found at https://packagecloud.io/lukaspustina/opensource.
+Bosun does not provide a Debian/Ubuntu repository. To use this role, you currently need to first make sure you have the bosun-scollector package available in a repository, configured in your APT sources. The same goes for the bosun-emitter. It can be found at https://packagecloud.io/lukaspustina/opensource. The `_scollector` variable (see below) offers a convenience feature to add this repo. In a future version, it might become split out into a separate role.
 
 Role Variables
 --------------
