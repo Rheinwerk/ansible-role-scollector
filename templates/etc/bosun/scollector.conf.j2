@@ -7,7 +7,9 @@ ColDir = "{{ _scollector.external_collectors.dir }}"
 DisableSelf = false
 
 [Tags]
+{% if _scollector.hostgroup is defined %}
   hostgroup = "{{ _scollector.hostgroup }}"
+{% endif %}
 {% if _scollector.common is defined and _scollector.common.tags is defined %}
 {% for k,v in _scollector.common.tags.iteritems() %}
   {{ k }} = "{{ v }}"
