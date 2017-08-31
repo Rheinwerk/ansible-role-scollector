@@ -17,8 +17,6 @@ DisableSelf = false
 {% endif %}
 
 {% if _scollector.extra_lines is defined %}
-{% if _scollector.extra_lines.hosts is defined and _scollector.extra_lines.hosts[inventory_hostname] is defined %}
-{{ _scollector.extra_lines.hosts[inventory_hostname] }}
-{% endif %}
+{{ _scollector.extra_lines }}
 {% endif %}
 
