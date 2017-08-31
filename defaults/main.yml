@@ -9,6 +9,10 @@ _scollector:
   server:
     ip: localhost
     port: 8070
+    protocol: http
+#  auth:
+#    user: scollector
+#    pass: scollectorpassword
   hostname: "{{ ansible_hostname }}"
   domain:
   hostgroup: my-group

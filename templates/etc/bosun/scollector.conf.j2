@@ -1,4 +1,4 @@
-Host = "{{ _scollector.server.ip }}:{{ _scollector.server.port }}"
+Host = "{{ _scollector.server.protocol|default("https") }}://{% if _scollector.auth is defined %}{{ _scollector.auth.user }}:{{ _scollector.auth.password }}@{% endif %}{{ _scollector.server.ip }}:{{ _scollector.server.port }}"
 FullHost = false
 Hostname = "{{ ansible_hostname ~ "." ~ _scollector.domain }}"
 {% if _scollector.external_collectors is defined %}
