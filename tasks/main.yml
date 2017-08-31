@@ -59,14 +59,19 @@
 
       when: _scollector.external_collectors.collectors is defined
 
+    - block:
+        - set_fact:
+            curl_auth: "--user '{{ _scollector.auth.user }}:{{ _scollector.auth.password }}'"
+          when: _scollector.auth is defined
 
-    - name: Announce Meta data of external collector metrics
-      run_once: True
-      command: >
-          curl -w "%{http_code}" -H "Content-Type: application/json" -X POST -d '[ { "metric": "{{ item.metric }}", "name": "rate", "value": "{{ item.ratetype }}" }, { "metric": "{{ item.metric }}", "name": "unit", "value": "{{ item.unit }}" }, { "metric": "{{ item.metric }}", "name": "desc", "value": "{{ item.desc|default('') }}" } ]' http://{{ _scollector.server.ip }}:{{ _scollector.server.port }}/api/metadata/put
-      register: result
-      failed_when: result.stdout != "204"
-      with_items: "{{ _scollector.external_collectors.metric_metadata }}"
+        - name: Announce Meta data of external collector metrics
+          run_once: True
+          command: >
+            curl -w "%{http_code}" {{ curl_auth|default("") }} -H "Content-Type: application/json" -X POST -d '[ { "metric": "{{ item.metric }}", "name": "rate", "value": "{{ item.ratetype }}" }, { "metric": "{{ item.metric }}", "name": "unit", "value": "{{ item.unit }}" }, { "metric": "{{ item.metric }}", "name": "desc", "value": "{{ item.desc|default('') }}" } ]' {{ _scollector.server.protocol|default("https") }}://{{ _scollector.server.ip }}:{{ _scollector.server.port }}/api/metadata/put
+          register: result
+          failed_when: result.stdout != "204"
+          with_items: "{{ _scollector.external_collectors.metric_metadata }}"
+
       when: _scollector.external_collectors.metric_metadata is defined
 
   when: _scollector.external_collectors is defined
