@@ -43,17 +43,22 @@
     - name: Create external collectors directory
       file: path={{ _scollector.external_collectors.dir }} state=directory owner=root group=root mode=0755
 
-    - name: Create external collectors interval directories
-      file: path={{ _scollector.external_collectors.dir }}/{{ item.interval }} state=directory owner=root group=root mode=0755
-      with_items: "{{ _scollector.external_collectors.collectors }}"
-      notify:
-        - Restart scollector
+    - block:
 
-    - name: Create external collectors
-      template: src="external_collectors/{{ item.template }}" dest="{{ _scollector.external_collectors.dir }}/{{ item.interval }}/{{ item.filename }}" owner=root group=root mode=0750
-      with_items: "{{ _scollector.external_collectors.collectors }}"
-      notify:
-        - Restart scollector
+        - name: Create external collectors interval directories
+          file: path={{ _scollector.external_collectors.dir }}/{{ item.interval }} state=directory owner=root group=root mode=0755
+          with_items: "{{ _scollector.external_collectors.collectors }}"
+          notify:
+            - Restart scollector
+
+        - name: Create external collectors
+          template: src="external_collectors/{{ item.template }}" dest="{{ _scollector.external_collectors.dir }}/{{ item.interval }}/{{ item.filename }}" owner=root group=root mode=0750
+          with_items: "{{ _scollector.external_collectors.collectors }}"
+          notify:
+            - Restart scollector
+
+      when: _scollector.external_collectors.collectors is defined
+
 
     - name: Announce Meta data of external collector metrics
       run_once: True
@@ -62,7 +67,7 @@
       register: result
       failed_when: result.stdout != "204"
       with_items: "{{ _scollector.external_collectors.metric_metadata }}"
-
+      when: _scollector.external_collectors.metric_metadata is defined
 
   when: _scollector.external_collectors is defined
 
