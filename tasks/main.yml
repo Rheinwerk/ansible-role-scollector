@@ -75,4 +75,3 @@
       when: _scollector.external_collectors.metric_metadata is defined
 
   when: _scollector.external_collectors is defined
-

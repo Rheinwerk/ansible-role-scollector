@@ -1,4 +1,3 @@
 ---
 - name: Restart scollector
   service: name=scollector state=restarted
-
