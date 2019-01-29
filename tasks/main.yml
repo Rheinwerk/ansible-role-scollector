@@ -15,7 +15,7 @@
 
     - name: Apt Update
       apt: update_cache=yes
-      when: RW_APT_CACHE_UPDATE is defined or repo_added|changed
+      when: RW_APT_CACHE_UPDATE is defined or repo_added is changed
 
   when: _scollector.apt_repos is defined
 
@@ -25,11 +25,12 @@
 
 
 - name: Install packages
-  apt: name="{{ item }}" state={{ install_state|default('present') }}
-  with_items:
-    - bosun-scollector
-    - bosun-emitter
-    - jq
+  apt:
+    state: "{{ install_state|default('present') }}"
+    name:
+      - bosun-scollector
+      - bosun-emitter
+      - jq
 
 - name: Create scollector configuration file
   template: src="{{ item }}.j2" dest="/{{ item }}" owner=root group=root mode=0640
