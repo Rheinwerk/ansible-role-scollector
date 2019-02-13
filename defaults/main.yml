@@ -6,6 +6,10 @@ _scollector:
     - key_id: "D59097AB"
       key_url: "https://packagecloud.io/lukaspustina/opensource/gpgkey"
       repo_line: "deb https://packagecloud.io/lukaspustina/opensource/ubuntu/ trusty main"
+  packages:
+    - bosun-scollector
+    - bosun-emitter
+    - jq
   server:
     ip: localhost
     port: 8070

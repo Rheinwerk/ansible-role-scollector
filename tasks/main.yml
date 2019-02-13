@@ -27,10 +27,7 @@
 - name: Install packages
   apt:
     state: "{{ install_state|default('present') }}"
-    name:
-      - bosun-scollector
-      - bosun-emitter
-      - jq
+    name: "{{ _scollector.packages }}"
 
 - name: Create scollector configuration file
   template: src="{{ item }}.j2" dest="/{{ item }}" owner=root group=root mode=0640
