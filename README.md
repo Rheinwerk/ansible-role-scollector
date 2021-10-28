@@ -3,7 +3,7 @@ scollector
 
 This roles installs and configures scollector, the telemetry collector for Bosun. It also adds the bosun-emitter helper tool, as well as jq.
 
-[![Build Status](https://travis-ci.org/Rheinwerk/ansible-role-scollector.svg?branch=master)](https://travis-ci.org/Rheinwerk/ansible-role-scollector)
+[![Build Status](https://github.com/Rheinwerk/ansible-role-scollector/actions/workflows/ci.yml/badge.svg)](https://github.com/Rheinwerk/ansible-role-scollector/actions/workflows/ci.yml)
 
 The general contract of this role is to take the variables map `_scollector` from `defaults/main.yml` as a template for your configuration and pass that configuration as a parameter to this role.
 
