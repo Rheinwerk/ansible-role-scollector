@@ -6,6 +6,8 @@ galaxy_info:
   company: Rheinwerk
   license: license (MIT)
   min_ansible_version: 2.9.0
+  #  we don't want to provide credentials for testing, skip molecule tests
+  min_ansible_container_version: "X"
   platforms:
   - name: Ubuntu
     versions:
