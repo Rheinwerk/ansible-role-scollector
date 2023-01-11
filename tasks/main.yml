@@ -3,8 +3,8 @@
 
 # Optionally Add Repos
 - name: Add repos
+  when: _scollector.apt_repos is defined
   block:
-
     - name: Add Repo Signing Keys
       apt_key:
         id: "{{ item.key_id }}"
@@ -22,8 +22,6 @@
       apt:
         update_cache: yes
       when: RW_APT_CACHE_UPDATE is defined or repo_added is changed
-
-  when: _scollector.apt_repos is defined
 
 - name: Set install_state
   set_fact:
@@ -49,8 +47,8 @@
     - Restart scollector
 
 - name: Include external collectors
+  when: _scollector.external_collectors is defined
   block:
-
     - name: Create external collectors directory
       file:
         path: "{{ _scollector.external_collectors.dir }}"
@@ -60,8 +58,8 @@
         mode: 0755
 
     - name: Prepare external collectors
+      when: _scollector.external_collectors.collectors is defined
       block:
-
         - name: Create external collectors interval directories
           file:
             path: "{{ _scollector.external_collectors.dir }}/{{ item.interval }}"
@@ -84,9 +82,9 @@
           notify:
             - Restart scollector
 
-      when: _scollector.external_collectors.collectors is defined
 
     - name: Include external_collectors.metric_metadata announcement
+      when: _scollector.external_collectors.metric_metadata is defined
       block:
         - name: Set curl_auth
           set_fact:
@@ -100,7 +98,3 @@
           register: result
           failed_when: result.stdout != "204"
           with_items: "{{ _scollector.external_collectors.metric_metadata }}"
-
-      when: _scollector.external_collectors.metric_metadata is defined
-
-  when: _scollector.external_collectors is defined
