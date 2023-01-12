@@ -1,3 +1,5 @@
 ---
 - name: Restart scollector
-  service: name=scollector state=restarted
+  service:
+    name: scollector
+    state: restarted

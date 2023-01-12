@@ -2,74 +2,99 @@
 ---
 
 # Optionally Add Repos
-- block:
-
+- name: Add repos
+  when: _scollector.apt_repos is defined
+  block:
     - name: Add Repo Signing Keys
-      apt_key: id="{{ item.key_id }}" url="{{ item.key_url }}"
+      apt_key:
+        id: "{{ item.key_id }}"
+        url: "{{ item.key_url }}"
       with_items: "{{ _scollector.apt_repos }}"
 
     - name: Add Apt Repo
-      apt_repository: repo="{{ item.repo_line }}" state=present
+      apt_repository:
+        repo: "{{ item.repo_line }}"
+        state: present
       with_items: "{{ _scollector.apt_repos }}"
       register: repo_added
 
     - name: Apt Update
-      apt: update_cache=yes
+      apt:
+        update_cache: yes
       when: RW_APT_CACHE_UPDATE is defined or repo_added is changed
 
-  when: _scollector.apt_repos is defined
-
-- set_fact:
+- name: Set install_state
+  set_fact:
     install_state: latest
   when: RW_ENABLE_DOWNLOADS is defined
 
 
-- name: Install packages
+- name: Install packages # noqa args[module]
   apt:
-    state: "{{ install_state|default('present') }}"
+    state: "{{ install_state | default('present') }}"
     name: "{{ _scollector.packages }}"
 
 - name: Create scollector configuration file
-  template: src="{{ item }}.j2" dest="/{{ item }}" owner=root group=root mode=0640
+  template:
+    src: "{{ item }}.j2"
+    dest: "/{{ item }}"
+    owner: root
+    group: root
+    mode: 0640
   with_items:
     - "etc/bosun/scollector.conf"
   notify:
     - Restart scollector
 
-- block:
-
+- name: Include external collectors
+  when: _scollector.external_collectors is defined
+  block:
     - name: Create external collectors directory
-      file: path={{ _scollector.external_collectors.dir }} state=directory owner=root group=root mode=0755
+      file:
+        path: "{{ _scollector.external_collectors.dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
 
-    - block:
-
+    - name: Prepare external collectors
+      when: _scollector.external_collectors.collectors is defined
+      block:
         - name: Create external collectors interval directories
-          file: path={{ _scollector.external_collectors.dir }}/{{ item.interval }} state=directory owner=root group=root mode=0755
+          file:
+            path: "{{ _scollector.external_collectors.dir }}/{{ item.interval }}"
+            state: directory
+            owner: root
+            group: root
+            mode: 0755
           with_items: "{{ _scollector.external_collectors.collectors }}"
           notify:
             - Restart scollector
 
         - name: Create external collectors
-          template: src="external_collectors/{{ item.template }}" dest="{{ _scollector.external_collectors.dir }}/{{ item.interval }}/{{ item.filename }}" owner=root group=root mode=0750
+          template:
+            src: "external_collectors/{{ item.template }}"
+            dest: "{{ _scollector.external_collectors.dir }}/{{ item.interval }}/{{ item.filename }}"
+            owner: root
+            group: root
+            mode: 0750
           with_items: "{{ _scollector.external_collectors.collectors }}"
           notify:
             - Restart scollector
 
-      when: _scollector.external_collectors.collectors is defined
 
-    - block:
-        - set_fact:
+    - name: Include external_collectors.metric_metadata announcement
+      when: _scollector.external_collectors.metric_metadata is defined
+      block:
+        - name: Set curl_auth
+          set_fact:
             curl_auth: "--user '{{ _scollector.auth.user }}:{{ _scollector.auth.password }}'"
           when: _scollector.auth is defined
 
-        - name: Announce Meta data of external collector metrics
+        - name: Announce Meta data of external collector metrics # noqa command-instead-of-module no-changed-when
           run_once: True
           command: >
-            curl -w "%{http_code}" {{ curl_auth|default("") }} -H "Content-Type: application/json" -X POST -d '[ { "metric": "{{ item.metric }}", "name": "rate", "value": "{{ item.ratetype }}" }, { "metric": "{{ item.metric }}", "name": "unit", "value": "{{ item.unit }}" }, { "metric": "{{ item.metric }}", "name": "desc", "value": "{{ item.desc|default('') }}" } ]' {{ _scollector.server.protocol|default("https") }}://{{ _scollector.server.ip }}:{{ _scollector.server.port }}/api/metadata/put
+            curl -w "%{http_code}" {{ curl_auth | default("") }} -H "Content-Type: application/json" -X POST -d '[ { "metric": "{{ item.metric }}", "name": "rate", "value": "{{ item.ratetype }}" }, { "metric": "{{ item.metric }}", "name": "unit", "value": "{{ item.unit }}" }, { "metric": "{{ item.metric }}", "name": "desc", "value": "{{ item.desc | default('') }}" } ]' {{ _scollector.server.protocol | default("https") }}://{{ _scollector.server.ip }}:{{ _scollector.server.port }}/api/metadata/put
           register: result
           failed_when: result.stdout != "204"
           with_items: "{{ _scollector.external_collectors.metric_metadata }}"
-
-      when: _scollector.external_collectors.metric_metadata is defined
-
-  when: _scollector.external_collectors is defined
