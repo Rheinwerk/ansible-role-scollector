@@ -6,36 +6,35 @@
   when: _scollector.apt_repos is defined
   block:
     - name: Add Repo Signing Keys
-      apt_key:
+      ansible.builtin.apt_key:
         id: "{{ item.key_id }}"
         url: "{{ item.key_url }}"
       with_items: "{{ _scollector.apt_repos }}"
 
     - name: Add Apt Repo
-      apt_repository:
+      ansible.builtin.apt_repository:
         repo: "{{ item.repo_line }}"
         state: present
       with_items: "{{ _scollector.apt_repos }}"
       register: repo_added
 
     - name: Apt Update
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
       when: RW_APT_CACHE_UPDATE is defined or repo_added is changed
 
 - name: Set install_state
-  set_fact:
+  ansible.builtin.set_fact:
     install_state: latest
   when: RW_ENABLE_DOWNLOADS is defined
 
-
 - name: Install packages # noqa args[module]
-  apt:
+  ansible.builtin.apt:
     state: "{{ install_state | default('present') }}"
     name: "{{ _scollector.packages }}"
 
 - name: Create scollector configuration file
-  template:
+  ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/{{ item }}"
     owner: root
@@ -50,7 +49,7 @@
   when: _scollector.external_collectors is defined
   block:
     - name: Create external collectors directory
-      file:
+      ansible.builtin.file:
         path: "{{ _scollector.external_collectors.dir }}"
         state: directory
         owner: root
@@ -61,7 +60,7 @@
       when: _scollector.external_collectors.collectors is defined
       block:
         - name: Create external collectors interval directories
-          file:
+          ansible.builtin.file:
             path: "{{ _scollector.external_collectors.dir }}/{{ item.interval }}"
             state: directory
             owner: root
@@ -72,7 +71,7 @@
             - Restart scollector
 
         - name: Create external collectors
-          template:
+          ansible.builtin.template:
             src: "external_collectors/{{ item.template }}"
             dest: "{{ _scollector.external_collectors.dir }}/{{ item.interval }}/{{ item.filename }}"
             owner: root
@@ -82,18 +81,17 @@
           notify:
             - Restart scollector
 
-
     - name: Include external_collectors.metric_metadata announcement
       when: _scollector.external_collectors.metric_metadata is defined
       block:
         - name: Set curl_auth
-          set_fact:
+          ansible.builtin.set_fact:
             curl_auth: "--user '{{ _scollector.auth.user }}:{{ _scollector.auth.password }}'"
           when: _scollector.auth is defined
 
         - name: Announce Meta data of external collector metrics # noqa command-instead-of-module no-changed-when
           run_once: True
-          command: >
+          ansible.builtin.command: >
             curl -w "%{http_code}" {{ curl_auth | default("") }} -H "Content-Type: application/json" -X POST -d '[ { "metric": "{{ item.metric }}", "name": "rate", "value": "{{ item.ratetype }}" }, { "metric": "{{ item.metric }}", "name": "unit", "value": "{{ item.unit }}" }, { "metric": "{{ item.metric }}", "name": "desc", "value": "{{ item.desc | default('') }}" } ]' {{ _scollector.server.protocol | default("https") }}://{{ _scollector.server.ip }}:{{ _scollector.server.port }}/api/metadata/put
           register: result
           failed_when: result.stdout != "204"
