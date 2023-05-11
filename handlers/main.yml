@@ -1,5 +1,5 @@
 ---
 - name: Restart scollector
-  service:
+  ansible.builtin.service:
     name: scollector
     state: restarted
