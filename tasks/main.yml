@@ -33,18 +33,6 @@
     state: "{{ install_state | default('present') }}"
     name: "{{ _scollector.packages }}"
 
-- name: Create scollector configuration file
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "/{{ item }}"
-    owner: root
-    group: root
-    mode: 0640
-  with_items:
-    - "etc/bosun/scollector.conf"
-  notify:
-    - Restart scollector
-
 - name: Include external collectors
   when: _scollector.external_collectors is defined
   block:
