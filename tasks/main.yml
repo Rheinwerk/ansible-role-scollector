@@ -39,7 +39,7 @@
     dest: "/{{ item }}"
     owner: root
     group: root
-    mode: 0640
+    mode: "0640"
   with_items:
     - "etc/bosun/scollector.conf"
   notify:
@@ -54,7 +54,7 @@
         state: directory
         owner: root
         group: root
-        mode: 0755
+        mode: "0755"
 
     - name: Prepare external collectors
       when: _scollector.external_collectors.collectors is defined
@@ -65,7 +65,7 @@
             state: directory
             owner: root
             group: root
-            mode: 0755
+            mode: "0755"
           with_items: "{{ _scollector.external_collectors.collectors }}"
           notify:
             - Restart scollector
@@ -76,7 +76,7 @@
             dest: "{{ _scollector.external_collectors.dir }}/{{ item.interval }}/{{ item.filename }}"
             owner: root
             group: root
-            mode: 0750
+            mode: "0750"
           with_items: "{{ _scollector.external_collectors.collectors }}"
           notify:
             - Restart scollector
