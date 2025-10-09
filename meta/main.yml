@@ -1,6 +1,5 @@
 galaxy_info:
-  author: Daniel Schneller
-  namespace: rheinwerk
+  author: rheinwerk
   role_name: scollector
   description: Installs and configures scollector, the telemetry collector for Bosun.
   company: Rheinwerk
