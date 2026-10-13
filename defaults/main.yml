@@ -17,7 +17,7 @@ _scollector:
 #  auth:
 #    user: scollector
 #    pass: scollectorpassword
-  hostname: "{{ ansible_hostname }}"
+  hostname: "{{ ansible_facts['hostname'] }}"
   domain:
   hostgroup: my-group
   common:
